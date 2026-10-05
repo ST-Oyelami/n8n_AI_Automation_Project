@@ -1,0 +1,173 @@
+{
+  "name": "LinkedIn Automation",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -80
+      ],
+      "id": "80894432-bcfe-4409-9c7b-b513991832c2",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1DQ13FPnIltbCtHmfnkHwU4iHortUBER2BjEAkZlcTDE/edit?usp=sharing"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        -80
+      ],
+      "id": "df5f3aaa-cc1a-41c0-a99b-f7002d07f58a",
+      "name": "Get a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "UtJUVOmEYXtnYR6t",
+          "name": "Google Docs OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Based on the given context:  {{ $json.content }}, prepare a LinkedIn post that must have a question to begin with which will work as a hook, and end the post with hashtags, make sure you don't add any formatting options like ** or // or ##, because the final output will directly be posted on LinkedIn, so don't make any formatting like bold, italic or anything."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        112,
+        -80
+      ],
+      "id": "f32a86c8-cf4e-411a-8527-7f0506a7c4ad",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "McbFwo9jtNPYZCzs",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "https://docs.google.com/document/d/1kDCUv-gkrRPwmQ3u-lopEjx78umMNY1IUWH6IDIz8YE/edit?usp=sharing",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $json.output[0].content[0].text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        464,
+        32
+      ],
+      "id": "1599e425-164e-45ac-bcf7-981662747ed0",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "UtJUVOmEYXtnYR6t",
+          "name": "Google Docs OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "postAs": "organization",
+        "organization": "77760972",
+        "text": "={{ $json.output[0].content[0].text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -224
+      ],
+      "id": "a11726b6-4205-40eb-bcc9-a09baad6804e",
+      "name": "Create a post",
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "upJV3TdZ3r7QIvIB",
+          "name": "LinkedIn OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a document": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8956ff83-4c25-4293-bdac-754db90d722b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "97c32cc2b68499459c7b571cb972a3d31c12f3b17c1b0fd23a8c94c31eb252d4"
+  },
+  "nodeGroups": [],
+  "id": "Oi9tZcEYJPI0otv7",
+  "tags": []
+}

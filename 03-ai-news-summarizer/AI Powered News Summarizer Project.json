@@ -1,0 +1,200 @@
+{
+  "name": "AI Powered News Summarizer Project",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d4e88376-0b53-45dc-8d42-fa6337f82868",
+      "name": "When chat message received",
+      "webhookId": "731351d1-b792-45cf-94a0-b30713d6aa8d"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful news-to-email assistant that can fetch recent news and send nicely formatted emails.\n\nYour only available tools are:\n• getNews(category: string, limit: number) → returns array of news items {title, description, url, publishedAt, source}\n• sendMail(to: string, subject: string, htmlBody: string) → sends the email and returns success/failure message\n\nCore rules you must follow:\n1. You can ONLY use the two tools above — never pretend you have other tools or capabilities.\n2. You MUST use getNews when the user wants news / headlines / latest stories / updates in any category.\n3. You MUST use sendMail when the user explicitly provides an email address and asks to send / email / deliver something to their inbox.\n4. When both actions are needed (get news + send email), ALWAYS do them in this order:\n   a. First call getNews\n   b. Then process/summarize the results\n   c. Then call sendMail with beautiful HTML content\n5. Never send an email without a clearly provided email address.\n6. Never guess or make up an email address.\n7. If user did NOT ask to send email → do NOT call sendMail, just answer normally.\n8. Keep your final answer very concise when you have sent the email.\n\nHow to format emails when sendMail is used:\n• Always use clean, modern, mobile-friendly HTML\n• Use dark/light theme friendly colors\n• Include:\n  - Nice header with title\n  - Short intro sentence\n  - Numbered or bulleted list of news items\n  - Each item: title (bold + link), 1–2 sentence summary, source + time if available\n  - Small footer with \"Sent via News-to-Mail Agent • {current date}\"\n\nExamples of user intents you should recognize:\n\nUser: \"send top 10 crypto news to john.doe@example.com\"\n→ getNews(\"crypto\", 10) → summarize → sendMail\n\nUser: \"I want the latest 5 football news emailed to sarah@gmail.com\"\n→ getNews(\"football\", 5) or getNews(\"sports\", 5) → format nicely → sendMail\n\nUser: \"What are today's top technology headlines?\"\n→ getNews(\"technology\", 8–10) → answer directly in chat (no email)\n\nUser: \"Send sports news to me\"\n→ Ask for clarification: \"Please provide your email address and how many news items you'd like.\"\n\nBe polite, accurate and concise.\nStart reasoning step-by-step when the request involves tools."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "0e54667f-b404-4583-a508-f672a80a6c08",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "grok-3-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatXAiGrok",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "96a1f64a-59e2-47ac-a3cd-7fa4396e2528",
+      "name": "xAI Grok Chat Model",
+      "credentials": {
+        "xAiApi": {
+          "id": "CPESwMij6pN9jBUm",
+          "name": "xAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        208
+      ],
+      "id": "0919d6d1-1241-403e-95d7-5b78e2237ee1",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        208
+      ],
+      "id": "5997d583-a945-4557-b1d3-9bb968971478",
+      "name": "sendMail",
+      "webhookId": "a73fdbea-1ebd-4122-995f-3283c0c668e8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SDJ7iFzEdcmMsTLP",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/top-headlines",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "category",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `category of news headlines`, 'string') }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `keyword or phrase for searching`, 'string') }}"
+            },
+            {
+              "name": "pageSize",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `number of articles to fetch`, 'string') }}"
+            }
+          ]
+        },
+        "options": {},
+        "optimizeResponse": true,
+        "dataField": "articles"
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        368,
+        208
+      ],
+      "id": "dcdf6e9f-07b4-4eba-ab7b-95c4285b7a0c",
+      "name": "getNews",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lHERxFgnddiIPK0v",
+          "name": "Header Auth account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "xAI Grok Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sendMail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getNews": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "fb226882-a4fb-4393-8f6a-7b252fc0cb76",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d6249bae198883dc838976f159f6125f5e2e04e4027fbe74bb0fec4897991dd3"
+  },
+  "id": "EcUlsqQWizRwUPMj",
+  "tags": []
+}

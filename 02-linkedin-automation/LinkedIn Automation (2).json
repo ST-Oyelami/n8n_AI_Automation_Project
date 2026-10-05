@@ -1,0 +1,171 @@
+{
+  "name": "LinkedIn Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Based on the given topic:{{ $json.Topic }}, do some research and then prepare a LinkedIn post that must have a question to begin with which will work as a hook, and end the post with hashtags, make sure you don't add any formatting options like ** or // or ##, because the final output will directly be posted on LinkedIn, so don't make any formatting like bold, italic or anything."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        112,
+        -80
+      ],
+      "id": "f32a86c8-cf4e-411a-8527-7f0506a7c4ad",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "McbFwo9jtNPYZCzs",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "https://docs.google.com/document/d/1kDCUv-gkrRPwmQ3u-lopEjx78umMNY1IUWH6IDIz8YE/edit?usp=sharing",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $json.output[0].content[0].text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        464,
+        32
+      ],
+      "id": "1599e425-164e-45ac-bcf7-981662747ed0",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "UtJUVOmEYXtnYR6t",
+          "name": "Google Docs OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "postAs": "organization",
+        "organization": "77760972",
+        "text": "={{ $json.output[0].content[0].text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -224
+      ],
+      "id": "a11726b6-4205-40eb-bcc9-a09baad6804e",
+      "name": "Create a post",
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "upJV3TdZ3r7QIvIB",
+          "name": "LinkedIn OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "10OXegEFpnFfNnVErvbJg4uU8PNMb5UcAsQwPDeP-EfA",
+          "mode": "list",
+          "cachedResultName": "Content Research 2026",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10OXegEFpnFfNnVErvbJg4uU8PNMb5UcAsQwPDeP-EfA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10OXegEFpnFfNnVErvbJg4uU8PNMb5UcAsQwPDeP-EfA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -80
+      ],
+      "id": "b51750d4-a25b-443b-b18a-e8ff6f5b0ba3",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "J4S4V4v7hbY9PdYw",
+          "name": "Google Sheets Trigger OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "82a5370d-7a56-46aa-ad7a-52abea1fdd90",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "97c32cc2b68499459c7b571cb972a3d31c12f3b17c1b0fd23a8c94c31eb252d4"
+  },
+  "nodeGroups": [],
+  "id": "Oi9tZcEYJPI0otv7",
+  "tags": []
+}

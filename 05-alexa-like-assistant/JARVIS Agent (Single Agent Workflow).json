@@ -1,0 +1,329 @@
+{
+  "name": "JARVIS Agent (Single Agent Workflow)",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        -80
+      ],
+      "id": "5d731510-0469-40ed-b933-ef9e32a85214",
+      "name": "When chat message received",
+      "webhookId": "jarvis-chat-trigger-0001"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are JARVIS, a calm and capable AI assistant. You have four tools available: Weather_Lookup, Forex_Convert, YouTube_Search, and News_Search. Read the user's message, decide which tool(s) answer it, call them, and reply in 2-4 friendly sentences using the real data returned. If the request spans multiple domains (e.g. weather AND news), call multiple tools in the same turn and combine the results. If nothing matches, just answer conversationally. Never invent data — only state what a tool actually returned. End with a brief, natural offer to help further."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        816,
+        -80
+      ],
+      "id": "d5952f3d-c53f-4bf5-8290-dde2d9f40214",
+      "name": "Supervisor Agent"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        144
+      ],
+      "id": "cde33685-39b5-44a1-921f-66b0bbe4018e",
+      "name": "Conversation Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get current weather and conditions for any city. Input: city name (e.g. 'Hyderabad' or 'London, UK').",
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "parametersQuery": {
+          "values": [
+            {
+              "name": "latitude"
+            },
+            {
+              "name": "longitude"
+            },
+            {
+              "name": "current",
+              "valueProvider": "fieldValue",
+              "value": "temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code"
+            },
+            {
+              "name": "daily",
+              "valueProvider": "fieldValue",
+              "value": "weather_code,temperature_2m_max,temperature_2m_min"
+            },
+            {
+              "name": "forecast_days",
+              "valueProvider": "fieldValue",
+              "value": "3"
+            },
+            {
+              "name": "timezone",
+              "valueProvider": "fieldValue",
+              "value": "auto"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        144
+      ],
+      "id": "77ba3e97-10a2-44c9-a54d-843fb659720f",
+      "name": "Weather_Lookup"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Search YouTube and return the top matching video for a song, artist, or playlist. Input: query (e.g. 'Believer Imagine Dragons').",
+        "url": "https://www.googleapis.com/youtube/v3/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "parametersQuery": {
+          "values": [
+            {
+              "name": "part",
+              "valueProvider": "fieldValue",
+              "value": "snippet"
+            },
+            {
+              "name": "type",
+              "valueProvider": "fieldValue",
+              "value": "video"
+            },
+            {
+              "name": "maxResults",
+              "valueProvider": "fieldValue",
+              "value": "1"
+            },
+            {
+              "name": "q"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        944,
+        144
+      ],
+      "id": "181971bd-03ee-4acf-b47e-89e776edecc9",
+      "name": "YouTube_Search",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "KA4LEg21WcgeGgiV",
+          "name": "Query Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get the latest news headlines on any topic, from the last 24 hours. Input: topic (e.g. 'AI', 'cricket', 'Telangana').",
+        "url": "https://newsapi.org/v2/everything",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "parametersQuery": {
+          "values": [
+            {
+              "name": "q"
+            },
+            {
+              "name": "sortBy",
+              "valueProvider": "fieldValue",
+              "value": "publishedAt"
+            },
+            {
+              "name": "language",
+              "valueProvider": "fieldValue",
+              "value": "en"
+            },
+            {
+              "name": "pageSize",
+              "valueProvider": "fieldValue",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1072,
+        144
+      ],
+      "id": "6914454d-1de3-4657-82a7-2ce5f6887b9e",
+      "name": "News_Search",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "KA4LEg21WcgeGgiV",
+          "name": "Query Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Convert an amount from one currency to another using live exchange rates. Inputs: amount (number), from (source currency ISO code, e.g. USD), to (target currency ISO code, e.g. INR).",
+        "url": "https://api.frankfurter.dev/v1/latest",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "amount",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `Amount to convert`, 'string') }}"
+            },
+            {
+              "name": "from",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `Source currency ISO code, e.g. USD`, 'string') }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `Target currency ISO code, e.g. INR`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1200,
+        144
+      ],
+      "id": "6b4b9ca0-c8bb-429f-a30f-316f7447f5c2",
+      "name": "Forex_exchange"
+    },
+    {
+      "parameters": {
+        "model": "grok-4.20-0309-non-reasoning",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatXAiGrok",
+      "typeVersion": 1,
+      "position": [
+        560,
+        144
+      ],
+      "id": "d1d271aa-2f14-4c4a-a209-e6c32f94ac7d",
+      "name": "xAI Grok Chat Model",
+      "credentials": {
+        "xAiApi": {
+          "id": "B84s25d9kI1h2tp9",
+          "name": "xAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather_Lookup": {
+      "ai_tool": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube_Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "News_Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Forex_exchange": {
+      "ai_tool": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "xAI Grok Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9c9ec012-91a4-4e26-b841-154a31eb12a9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "97c32cc2b68499459c7b571cb972a3d31c12f3b17c1b0fd23a8c94c31eb252d4"
+  },
+  "nodeGroups": [],
+  "id": "4ZPmVgYJ32Oxp5Kl",
+  "tags": []
+}

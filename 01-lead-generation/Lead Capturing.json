@@ -1,0 +1,227 @@
+{
+  "name": "Lead Capturing",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Data Analytics Masters 2026",
+        "formDescription": "If you’re interested in learning Data Analytics in 2026, share your details and we’ll get back to you with the next steps. ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name"
+            },
+            {
+              "fieldLabel": "WhatsApp"
+            },
+            {
+              "fieldLabel": "Country Code"
+            },
+            {
+              "fieldLabel": "Education",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Anything below Bachelor's"
+                  },
+                  {
+                    "option": "Bachelor's"
+                  },
+                  {
+                    "option": "Master's or above"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Working Professional?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Get Started"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e1cc3d15-f51b-4ab0-b4cb-3c2a841ca622",
+      "name": "On form submission",
+      "webhookId": "d09b6c4b-65d7-48b1-b181-2280dfdab0f7"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1SAphNxudzpx9L_tcyyd6kH4YPRjvEF8EHNfumQLdSCs",
+          "mode": "list",
+          "cachedResultName": "DA Masters Leads  (June 2026)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SAphNxudzpx9L_tcyyd6kH4YPRjvEF8EHNfumQLdSCs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SAphNxudzpx9L_tcyyd6kH4YPRjvEF8EHNfumQLdSCs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "WhatsApp": "={{ $json.WhatsApp }}",
+            "Country": "={{ $json['Country Code'] }}",
+            "Education": "={{ $json.Education }}",
+            "Working Professional": "={{ $json['Working Professional?'] }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "WhatsApp",
+              "displayName": "WhatsApp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Country",
+              "displayName": "Country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Education",
+              "displayName": "Education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Working Professional",
+              "displayName": "Working Professional",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "68a3428c-3da5-4f2a-903f-b16f3f1f06c4",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "uPN8VKR1y7VwsYiY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "brajamohanpattnaik@gmail.com",
+        "subject": "Lead Enquiry: Data Analytics Masters 2026",
+        "emailType": "text",
+        "message": "=Hello Satyajit,\n\nHere's a new lead being captured for the Data Analytics program.\n\nName: {{ $json.Name }}\nWhatsApp: {{ $json.WhatsApp }} \nCountry: {{ $json.Country }}\nEducation: {{ $json.Education }}\nWorking Professional: {{ $json['Working Professional'] }}\n\nThanks,\nAi Automation (n8n) ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "08fd9b4e-12af-432c-8222-0b7ea7896d7d",
+      "name": "Send a message",
+      "webhookId": "46e58fe2-cbfc-4798-a6ef-6e43e9d8bdca",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5uM35Ci3AnFSF6fA",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8d6ae6f3-3a45-4908-89a1-7466862b4f56",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5d7ed0a4bb2057549c36a30d6e43a4be718debc77184a72421ae00d6aff2ac61"
+  },
+  "nodeGroups": [],
+  "id": "Jr3RndKhnjNdeIdO",
+  "tags": []
+}
